@@ -5,8 +5,6 @@ import java.util.Random;
 public class EstudiantesYLibros implements Runnable{
     //Creamos 9 libros
     public static boolean[] libros = new boolean[9];
-    //Creamos un objeto para notifyAll
-    public static Object obj = new Object();
 
     public static void main(String[] args) {
         //Creamos una nueva clase
@@ -22,6 +20,7 @@ public class EstudiantesYLibros implements Runnable{
     @Override
     public void run() {
         try {
+            //Bucle infinito
             while (true) {
                 // Elegimos un libro aleatorio entre 9 para cada libro por estudiante
                 int libro = new Random().nextInt(9);
@@ -33,12 +32,12 @@ public class EstudiantesYLibros implements Runnable{
                 }
 
                 //Solo lo puede ejecutar un hilo al mismo tiempo
-                synchronized (obj) {
+                synchronized (libros) {
                     // Mientras uno de los libros se esté usando
-                    while (libros[libro] == true || libros[libro1] == true) {
+                    while (libros[libro] || libros[libro1]) {
                         try {
                             //Detenemos el hilo
-                            obj.wait();
+                            libros.wait();
                         //Control de excepciones
                         } catch (InterruptedException e) {
                             System.err.println(e.getMessage());
@@ -58,12 +57,12 @@ public class EstudiantesYLibros implements Runnable{
                 System.out.println(Thread.currentThread().getName() + " ha terminado con los libros.");
 
                 //Solo lo puede ejecutar un hilo al mismo tiempo
-                synchronized (obj) {
+                synchronized (libros) {
                     //Los libros no estan siendo usados
                     libros[libro] = false;
                     libros[libro1] = false;
                     //Libros liberados
-                    obj.notifyAll();
+                    libros.notifyAll();
                 }
 
             }
